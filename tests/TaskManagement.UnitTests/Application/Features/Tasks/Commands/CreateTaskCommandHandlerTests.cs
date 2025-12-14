@@ -1,4 +1,5 @@
 using Application.Features.Tasks.Commands;
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Interfaces;
 using FluentAssertions;
@@ -51,7 +52,7 @@ namespace TaskManagement.UnitTests.Application.Features.Tasks.Commands
             var userId = 100;
             _mockCurrentUserService.Setup(s => s.UserId).Returns(userId);
             _mockTaskRepository.Setup(r => r.AddAsync(It.IsAny<Domain.Entities.Task>(), It.IsAny<CancellationToken>()))
-                .Callback<Domain.Entities.Task, CancellationToken>((t, c) => t.Id = 999) // Simulate ID generation
+                .Callback<Domain.Entities.Task, CancellationToken>((t, c) => t.Id = 999)
                 .Returns((Domain.Entities.Task t, CancellationToken c) => System.Threading.Tasks.Task.FromResult(t));
 
             // Act
@@ -69,7 +70,7 @@ namespace TaskManagement.UnitTests.Application.Features.Tasks.Commands
 
             _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
             
-            _mockPublishEndpoint.Verify(p => p.Publish(It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Once); // TaskCreatedMessage is strict, verifying object for now
+            _mockPublishEndpoint.Verify(p => p.Publish(It.IsAny<TaskCreatedMessage>(), It.IsAny<CancellationToken>()), Times.Once);
 
             _mockNotifier.Verify(n => n.NotifyTaskAssignedAsync(command.AssignedUserId.Value, 999, command.Title, It.IsAny<CancellationToken>()), Times.Once);
         }
